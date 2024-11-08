@@ -3,24 +3,28 @@ import { Toaster } from 'react-hot-toast';
 import { useSupabase } from './hooks/useSupabase';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 
 export default function App() {
-  const { user, loading } = useSupabase();
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-500 via-cyan-500 to-green-500 animate-gradient flex items-center justify-center">
-        <div className="glass-morphism p-8 rounded-lg">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent"></div>
-        </div>
-      </div>
-    );
-  }
+  const { user, login, logout } = useSupabase();
 
   return (
-    <>
+    <Router>
       <Toaster position="top-right" />
-      {user ? <Dashboard /> : <Login />}
-    </>
+      <Routes>
+        <Route
+          path="/login"
+          element={user ? <Navigate to="/dashboard" /> : <Login onLogin={login} />}
+        />
+        <Route
+          path="/dashboard"
+          element={user ? <Dashboard onLogout={logout} /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="*"
+          element={<Navigate to={user ? "/dashboard" : "/login"} />}
+        />
+      </Routes>
+    </Router>
   );
 }

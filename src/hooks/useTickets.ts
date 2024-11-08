@@ -56,17 +56,13 @@ export function useTickets(user: any) { // Accept user as a parameter
     }
   };
 
-  const createTicket = async (newTicket: Omit<Ticket, 'id' | 'createdAt' | 'comments'>) => {
+  const createTicket = async (newTicket: Omit<Ticket, 'id' | 'createdAt' | 'comments'>): Promise<void> => {
     try {
-      console.log("Creating ticket with data:", newTicket); // Log ticket data for debugging
       const { error } = await supabase
         .from('tickets')
         .insert([newTicket]);
-
-      if (error) {
-        console.error("Error details:", error); // Log error details
-        throw error;
-      }
+  
+      if (error) throw error;
       toast.success('Ticket created successfully');
     } catch (error) {
       toast.error('Error creating ticket');

@@ -1,19 +1,21 @@
 import React, { useState } from 'react';
-import { useSupabase } from '../hooks/useSupabase';
 import { LogIn } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import toast from 'react-hot-toast';
 
-export default function Login() {
+interface LoginProps {
+  onLogin: (email: string, password: string) => Promise<void>;
+}
+
+export default function Login({ onLogin }: LoginProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { login } = useSupabase();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await login(email, password);
+      await onLogin(email, password);
     } catch (error) {
       toast.error('Login failed');
     }

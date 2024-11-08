@@ -1,4 +1,3 @@
-// Dashboard.tsx
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTickets } from '../hooks/useTickets';
@@ -9,9 +8,13 @@ import { LogOut, Plus, TicketIcon } from 'lucide-react';
 import { Button } from './ui/button';
 import { Ticket } from '../types';
 
-export default function Dashboard() {
-  const { user, logout } = useAuth();
-  const { tickets, loading, createTicket, updateTicket, addComment } = useTickets(user); // Pass user here
+interface DashboardProps {
+  onLogout: () => Promise<void>; // Define onLogout prop type
+}
+
+export default function Dashboard({ onLogout }: DashboardProps) {
+  const { user } = useAuth();
+  const { tickets, loading, createTicket, updateTicket, addComment } = useTickets(user);
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [showCreateTicket, setShowCreateTicket] = useState(false);
 
@@ -20,6 +23,15 @@ export default function Dashboard() {
       console.log("Tickets loaded:", tickets);
     }
   }, [loading, tickets]);
+
+  const handleCreateTicket = async (newTicket: Omit<Ticket, 'id' | 'createdAt' | 'comments'>) => {
+    try {
+      await createTicket(newTicket);
+      setShowCreateTicket(false);
+    } catch (error) {
+      console.error("Error creating ticket:", error);
+    }
+  };
 
   if (loading) {
     return (
@@ -32,7 +44,7 @@ export default function Dashboard() {
   if (!user) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <span>User is not authenticated. Please login again.</span>
+        <span>User is not authenticated. Please log in again.</span>
       </div>
     );
   }
@@ -53,7 +65,7 @@ export default function Dashboard() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => logout()}
+                onClick={onLogout} // Use the onLogout prop
                 className="flex items-center"
               >
                 <LogOut className="h-4 w-4 mr-2" />
@@ -84,11 +96,8 @@ export default function Dashboard() {
           {showCreateTicket ? (
             <div>
               <CreateTicket
-                onCreateTicket={(newTicket) => {
-                  createTicket(newTicket); // Pass newTicket directly
-                  setShowCreateTicket(false);
-                }}
-                userId={user?.id || ''}
+                onCreateTicket={handleCreateTicket}
+                userId={user.id || ''}
               />
               <div className="mt-4">
                 <Button
@@ -103,7 +112,7 @@ export default function Dashboard() {
             <div>
               <TicketDetail
                 ticket={selectedTicket}
-                currentUser={user!}
+                currentUser={user}
                 onUpdateTicket={updateTicket}
                 onAddComment={(ticketId, comment) => {
                   addComment(ticketId, comment.content, comment.userId);

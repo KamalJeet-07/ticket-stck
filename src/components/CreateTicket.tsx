@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 import { Ticket } from '../types';
 
 interface CreateTicketProps {
-  onCreateTicket: (ticket: Omit<Ticket, 'id' | 'createdAt' | 'comments'>) => Promise<void>; // Expecting a Promise for async
+  onCreateTicket: (ticket: Omit<Ticket, 'id' | 'createdAt' | 'comments'>) => Promise<void>;
   userId: string;
 }
 
@@ -20,8 +20,8 @@ export default function CreateTicket({ onCreateTicket, userId }: CreateTicketPro
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState<'low' | 'medium' | 'high'>('medium');
-  const [loading, setLoading] = useState(false); // Track loading state
-  const [error, setError] = useState<string | null>(null); // Track error state
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,18 +32,19 @@ export default function CreateTicket({ onCreateTicket, userId }: CreateTicketPro
       title,
       description,
       priority,
-      status: 'open', // Default status on creation
+      status: 'open',
       userId,
     };
 
     try {
-      await onCreateTicket(newTicket); // Awaiting onCreateTicket to handle async errors
+      await onCreateTicket(newTicket);
       setTitle('');
       setDescription('');
       setPriority('medium');
       toast.success('Ticket created successfully');
     } catch (err: any) {
-      setError(err.message || 'Failed to create ticket'); // Capture error message if available
+      setError(err.message || 'Failed to create ticket');
+      toast.error('Error creating ticket');
       console.error('Error creating ticket:', err);
     } finally {
       setLoading(false);
@@ -102,13 +103,12 @@ export default function CreateTicket({ onCreateTicket, userId }: CreateTicketPro
             </select>
           </div>
 
-          {/* Display error if present */}
           {error && <div className="text-red-600 text-sm">{error}</div>}
 
           <div className="flex justify-end">
             <button
               type="submit"
-              disabled={loading} // Disable button while loading
+              disabled={loading}
               className={`inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               {loading ? (
