@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { PlusCircle } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { Ticket } from '../types';
 
 interface CreateTicketProps {
@@ -40,6 +41,7 @@ export default function CreateTicket({ onCreateTicket, userId }: CreateTicketPro
       setTitle('');
       setDescription('');
       setPriority('medium');
+      toast.success('Ticket created successfully');
     } catch (err: any) {
       setError(err.message || 'Failed to create ticket'); // Capture error message if available
       console.error('Error creating ticket:', err);

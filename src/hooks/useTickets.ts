@@ -1,4 +1,3 @@
-// useTickets.ts
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { Ticket } from '../types';
@@ -59,11 +58,15 @@ export function useTickets(user: any) { // Accept user as a parameter
 
   const createTicket = async (newTicket: Omit<Ticket, 'id' | 'createdAt' | 'comments'>) => {
     try {
+      console.log("Creating ticket with data:", newTicket); // Log ticket data for debugging
       const { error } = await supabase
         .from('tickets')
         .insert([newTicket]);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error details:", error); // Log error details
+        throw error;
+      }
       toast.success('Ticket created successfully');
     } catch (error) {
       toast.error('Error creating ticket');
@@ -73,12 +76,16 @@ export function useTickets(user: any) { // Accept user as a parameter
 
   const updateTicket = async (ticketId: string, updates: Partial<Ticket>) => {
     try {
+      console.log("Updating ticket with ID:", ticketId, "with data:", updates); // Debugging log
       const { error } = await supabase
         .from('tickets')
         .update(updates)
         .eq('id', ticketId);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error details:", error); // Log error details
+        throw error;
+      }
       toast.success('Ticket updated successfully');
     } catch (error) {
       toast.error('Error updating ticket');
@@ -88,15 +95,21 @@ export function useTickets(user: any) { // Accept user as a parameter
 
   const addComment = async (ticketId: string, content: string, userId: string) => {
     try {
+      const commentData = {
+        ticket_id: ticketId,
+        content,
+        user_id: userId,
+      };
+      console.log("Adding comment with data:", commentData); // Debugging log
+
       const { error } = await supabase
         .from('comments')
-        .insert([{
-          ticket_id: ticketId,
-          content,
-          user_id: userId,
-        }]);
+        .insert([commentData]);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error details:", error); // Log error details
+        throw error;
+      }
       toast.success('Comment added successfully');
     } catch (error) {
       toast.error('Error adding comment');
