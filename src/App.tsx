@@ -9,7 +9,7 @@ export default function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 animate-gradient flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-blue-500 via-cyan-500 to-green-500 animate-gradient flex items-center justify-center">
         <div className="glass-morphism p-8 rounded-lg">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent"></div>
         </div>

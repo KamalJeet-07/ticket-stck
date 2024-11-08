@@ -4,22 +4,22 @@ export interface User {
   name: string;
   role: 'user' | 'admin';
 }
-
+// types.ts
 export interface Ticket {
   id: string;
   title: string;
   description: string;
-  status: 'open' | 'in-progress' | 'resolved';
   priority: 'low' | 'medium' | 'high';
-  createdAt: string;
+  status: 'open' | 'in-progress' | 'resolved';
+  createdAt: string; // or Date if you prefer
   userId: string;
-  assignedTo?: string;
-  comments: Comment[];
+  comments?: Comment[]; // Optional depending on your structure
 }
 
 export interface Comment {
   id: string;
+  ticketId: string;
   content: string;
   userId: string;
-  createdAt: string;
+  createdAt: string; // or Date if you prefer
 }

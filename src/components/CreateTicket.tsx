@@ -1,29 +1,51 @@
 import React, { useState } from 'react';
-import { Ticket } from '../types';
 import { PlusCircle } from 'lucide-react';
+import { Ticket } from '../types';
 
 interface CreateTicketProps {
-  onCreateTicket: (ticket: Omit<Ticket, 'id' | 'createdAt' | 'comments'>) => void;
+  onCreateTicket: (ticket: Omit<Ticket, 'id' | 'createdAt' | 'comments'>) => Promise<void>; // Expecting a Promise for async
+  userId: string;
+}
+
+interface NewTicket {
+  title: string;
+  description: string;
+  priority: 'low' | 'medium' | 'high';
+  status: 'open' | 'in-progress' | 'resolved';
   userId: string;
 }
 
 export default function CreateTicket({ onCreateTicket, userId }: CreateTicketProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [priority, setPriority] = useState<Ticket['priority']>('medium');
+  const [priority, setPriority] = useState<'low' | 'medium' | 'high'>('medium');
+  const [loading, setLoading] = useState(false); // Track loading state
+  const [error, setError] = useState<string | null>(null); // Track error state
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onCreateTicket({
+    setLoading(true);
+    setError(null);
+
+    const newTicket: NewTicket = {
       title,
       description,
       priority,
-      status: 'open',
+      status: 'open', // Default status on creation
       userId,
-    });
-    setTitle('');
-    setDescription('');
-    setPriority('medium');
+    };
+
+    try {
+      await onCreateTicket(newTicket); // Awaiting onCreateTicket to handle async errors
+      setTitle('');
+      setDescription('');
+      setPriority('medium');
+    } catch (err: any) {
+      setError(err.message || 'Failed to create ticket'); // Capture error message if available
+      console.error('Error creating ticket:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -69,7 +91,7 @@ export default function CreateTicket({ onCreateTicket, userId }: CreateTicketPro
               id="priority"
               name="priority"
               value={priority}
-              onChange={(e) => setPriority(e.target.value as Ticket['priority'])}
+              onChange={(e) => setPriority(e.target.value as 'low' | 'medium' | 'high')}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             >
               <option value="low">Low</option>
@@ -78,13 +100,24 @@ export default function CreateTicket({ onCreateTicket, userId }: CreateTicketPro
             </select>
           </div>
 
+          {/* Display error if present */}
+          {error && <div className="text-red-600 text-sm">{error}</div>}
+
           <div className="flex justify-end">
             <button
               type="submit"
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              disabled={loading} // Disable button while loading
+              className={`inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              <PlusCircle className="h-4 w-4 mr-2" />
-              Create Ticket
+              {loading ? (
+                <svg className="animate-spin h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.372 0 0 5.372 0 12h4z"></path>
+                </svg>
+              ) : (
+                <PlusCircle className="h-4 w-4 mr-2" />
+              )}
+              {loading ? 'Creating...' : 'Create Ticket'}
             </button>
           </div>
         </form>

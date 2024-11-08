@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+// Dashboard.tsx
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTickets } from '../hooks/useTickets';
 import TicketList from './TicketList';
@@ -10,14 +11,28 @@ import { Ticket } from '../types';
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
-  const { tickets, loading, createTicket, updateTicket, addComment } = useTickets();
+  const { tickets, loading, createTicket, updateTicket, addComment } = useTickets(user); // Pass user here
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [showCreateTicket, setShowCreateTicket] = useState(false);
+
+  useEffect(() => {
+    if (!loading) {
+      console.log("Tickets loaded:", tickets);
+    }
+  }, [loading, tickets]);
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent"></div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <span>User is not authenticated. Please login again.</span>
       </div>
     );
   }
@@ -70,7 +85,7 @@ export default function Dashboard() {
             <div>
               <CreateTicket
                 onCreateTicket={(newTicket) => {
-                  createTicket(newTicket);
+                  createTicket(newTicket); // Pass newTicket directly
                   setShowCreateTicket(false);
                 }}
                 userId={user?.id || ''}

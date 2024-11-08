@@ -1,50 +1,63 @@
+// useTickets.ts
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { Ticket } from '../types';
 import toast from 'react-hot-toast';
 
-export function useTickets() {
+export function useTickets(user: any) { // Accept user as a parameter
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchTickets();
-    
-    const subscription = supabase
-      .channel('tickets')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'tickets' }, 
-        () => {
-          fetchTickets();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
+    if (user) {
+      fetchTickets();
+    } else {
+      console.log("User is not authenticated, skipping fetch.");
+      setLoading(false);
+    }
+  }, [user]);
 
   const fetchTickets = async () => {
+    console.log("Starting fetchTickets...");
+    setLoading(true);
     try {
       const { data, error } = await supabase
         .from('tickets')
         .select(`
-          *,
-          comments (*)
-        `)
+          id,
+          title,
+          description,
+          priority,
+          status,
+          created_at,
+          user_id
+        `) // Fetch fields without aliasing
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      setTickets(data || []);
+      if (error) {
+        console.error("Fetch error:", error);
+        throw error;
+      }
+
+      // Map data to match the `Ticket` interface
+      const mappedData = data?.map(ticket => ({
+        ...ticket,
+        createdAt: ticket.created_at, // Map created_at to createdAt
+        userId: ticket.user_id,       // Map user_id to userId
+      })) as Ticket[];
+
+      console.log("Test fetch successful, mapped data:", mappedData);
+      setTickets(mappedData);
     } catch (error) {
       toast.error('Error fetching tickets');
       console.error('Error fetching tickets:', error);
     } finally {
       setLoading(false);
+      console.log("Exiting fetchTickets, loading state set to false");
     }
   };
 
-  const createTicket = async (newTicket: Omit<Ticket, 'id' | 'created_at' | 'comments'>) => {
+  const createTicket = async (newTicket: Omit<Ticket, 'id' | 'createdAt' | 'comments'>) => {
     try {
       const { error } = await supabase
         .from('tickets')
